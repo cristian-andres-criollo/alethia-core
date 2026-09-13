@@ -1,0 +1,56 @@
+# ============================================================
+#  .dockerignore — Aletheia Core
+#  Excluir archivos innecesarios del contexto de build
+# ============================================================
+
+# Git
+.git
+.gitignore
+
+# Python bytecode & cache
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Entornos virtuales
+venv/
+.venv/
+env/
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# Logs (se montan como volumen)
+logs/
+
+# ChromaDB local (se monta como volumen)
+chroma_db/
+
+# Tests (no necesarios en producción)
+tests/
+test_*.py
+pytest.ini
+
+# Scripts de Windows (no necesarios en Docker/Linux)
+build_model.ps1
+
+# Docker files (evitar recursividad)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentación
+*.md
+LICENSE

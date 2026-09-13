@@ -1,0 +1,75 @@
+# ============================================================
+#  Aletheia Core — Docker Compose
+#  Levanta Aletheia Core + Ollama como servicios orquestados
+# ============================================================
+
+services:
+  # -------- Ollama (Motor LLM local) --------
+  ollama:
+    image: ollama/ollama:latest
+    container_name: aletheia-ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    # Descomenta las siguientes líneas si tienes GPU NVIDIA:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # -------- Aletheia Core (Motor de Inferencia) --------
+  aletheia-core:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aletheia-core
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - CUSTOM_API_BASE=http://ollama:11434/v1
+    ports:
+      - "8000:8000"
+    volumes:
+      - chroma_data:/app/chroma_db
+      - logs_data:/app/logs
+    depends_on:
+      ollama:
+        condition: service_healthy
+    # stdin_open y tty necesarios para el modo consola interactivo
+    stdin_open: true
+    tty: true
+
+  # -------- Modelo Builder (init container) --------
+  # Construye el modelo personalizado en Ollama al iniciar
+  model-builder:
+    image: ollama/ollama:latest
+    container_name: aletheia-model-builder
+    depends_on:
+      ollama:
+        condition: service_healthy
+    volumes:
+      - ./Modelfile:/Modelfile:ro
+    entrypoint: ["sh", "-c", "ollama create aletheia-core -f /Modelfile"]
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    restart: "no"
+
+volumes:
+  ollama_data:
+    driver: local
+  chroma_data:
+    driver: local
+  logs_data:
+    driver: local

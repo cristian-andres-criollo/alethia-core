@@ -1,1 +1,45 @@
-/.env
+# ============================================================
+#  .gitignore — Aletheia Core
+# ============================================================
+
+# ---------- Secretos ----------
+.env
+
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# ---------- Entornos virtuales ----------
+venv/
+.venv/
+env/
+
+# ---------- IDE ----------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ---------- OS ----------
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# ---------- Logs ----------
+logs/*.log
+logs/*.json
+
+# ---------- ChromaDB local ----------
+chroma_db/
+
+# ---------- Modelos descargados ----------
+*.bin
+*.gguf
+*.onnx
