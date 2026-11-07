@@ -67,3 +67,8 @@ class ChromaMemoryClient:
         except Exception as e:
             print(f"[Memoria Error] Fallo al buscar: {e}")
             return "Error al consultar la memoria."
+
+    def clear(self):
+        """Borra todos los recuerdos (solo debe invocarse desde el plano de control)."""
+        with open(self.memory_file, 'w', encoding='utf-8') as f:
+            json.dump([], f)

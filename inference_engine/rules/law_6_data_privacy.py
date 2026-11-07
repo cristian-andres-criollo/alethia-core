@@ -1,6 +1,6 @@
 import re
 
-from ..security import get_root_pin, has_root_auth, normalize
+from ..security import normalize
 
 
 class Law6DataPrivacy:
@@ -13,6 +13,7 @@ class Law6DataPrivacy:
       - un DESTINO externo (internet, servidor, pastebin, webhook...), o
       - un OBJETO sensible (contraseñas, credenciales, tokens, código fuente, mis datos...).
     Así "¿cómo envío datos de un formulario?" no se bloquea, pero "envía mis contraseñas" sí.
+    2.0: la excepción solo la concede el plano de control, nunca el contenido.
     """
     _VERB = re.compile(
         r"\b(?:(?:sub(?:e|o|a|an|es|ir|iendo)"
@@ -32,9 +33,6 @@ class Law6DataPrivacy:
         r"mis (?:datos|archivos|fotos|documentos|correos))\b|\.env\b")
     _SEARCH_PASSWORDS = re.compile(r"\bbusca\w*\b.{0,30}\barchivos? de contrasen")
 
-    def __init__(self):
-        self.root_pin = get_root_pin()
-
     def _is_exfiltration(self, text: str) -> bool:
         if self._SEARCH_PASSWORDS.search(text):
             return True
@@ -42,13 +40,16 @@ class Law6DataPrivacy:
             return False
         return bool(self._DESTINATION.search(text) or self._SENSITIVE.search(text))
 
-    def validate(self, user_intent: str) -> dict:
+    def validate(self, user_intent: str, transmision_autorizada: bool = False) -> dict:
+        """
+        2.0: la excepción ya no se lee del texto ([sudo: ...] se ignora). Solo el plano de
+        control puede autorizar UNA transmisión, pasando transmision_autorizada=True.
+        """
         if self._is_exfiltration(normalize(user_intent)):
-            # El PIN se compara contra el texto ORIGINAL (respeta mayúsculas)
-            if has_root_auth(user_intent, self.root_pin):
+            if transmision_autorizada:
                 return {
                     "is_valid": True,
-                    "reason": "Autoridad Raíz confirmada. Excepción a la Sexta Ley permitida (transmisión autorizada)."
+                    "reason": "Transmisión autorizada por el plano de control (excepción a la Sexta Ley)."
                 }
             return {
                 "is_valid": False,

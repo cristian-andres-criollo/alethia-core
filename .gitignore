@@ -45,3 +45,7 @@ chroma_db/
 *.onnx
 # ---------- Sandbox de escritura de la IA ----------
 workspace/
+
+# ---------- Evaluación ----------
+evaluacion/.v1/
+evaluacion/datasets/

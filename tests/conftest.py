@@ -85,6 +85,9 @@ class FakeCerebro:
         return r
 
 
+ALL_CAPS = {"comunicacion", "financiera", "eliminacion", "control_acceso", "dispositivo", "escritura"}
+
+
 @pytest.fixture
 def orchestrator_factory(monkeypatch, tmp_path):
     """Crea un AletheiaOrchestrator con cerebro falso y memoria en tmp_path."""
@@ -98,10 +101,11 @@ def orchestrator_factory(monkeypatch, tmp_path):
     # Evita llamadas reales a Google Translate
     monkeypatch.setattr(ma, "translate_text", lambda text, lang: f"[{lang}] {text}")
 
-    def _factory(responses=None):
+    def _factory(responses=None, capacidades=None):
         cerebro = FakeCerebro(responses)
         monkeypatch.setattr(ma, "AletheiaCerebro", lambda: cerebro)
-        orch = ma.AletheiaOrchestrator()
+        caps = set(ALL_CAPS if capacidades is None else capacidades)
+        orch = ma.AletheiaOrchestrator(planner=SimpleNamespace(plan=lambda instr: caps))
         orch._fake_cerebro = cerebro
         return orch
 

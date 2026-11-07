@@ -122,6 +122,31 @@ def handle_camera_command(user_input: str) -> str | None:
         return result
 
 
+def handle_admin_command(user_input: str, orquestador):
+    """/admin <borrar_memoria|apagar|transmision_autorizada>. Retorna un grant pendiente
+    (solo para transmision_autorizada) o None."""
+    import getpass
+    from control_plane import CONTROL_PLANE, OPERACIONES
+
+    parts = user_input.split()
+    if len(parts) != 2 or parts[1] not in OPERACIONES:
+        ops = "\n".join(f"  {k}: {v}" for k, v in OPERACIONES.items())
+        console.print(f"[yellow]Uso: /admin <operacion>\n{ops}[/yellow]")
+        return None
+    op = parts[1]
+    pin = getpass.getpass("PIN raíz (no se muestra ni se envía al modelo): ")
+    grant = CONTROL_PLANE.authorize(pin, op)
+    del pin
+    if grant is None:
+        console.print("[bold red][PLANO DE CONTROL] PIN rechazado o canal bloqueado temporalmente.[/bold red]")
+        return None
+    if op == "transmision_autorizada":
+        console.print("[bold green][PLANO DE CONTROL] Transmisión autorizada para tu PRÓXIMO mensaje.[/bold green]")
+        return grant
+    console.print(Panel(orquestador.run_admin(op, grant), title="PLANO DE CONTROL", border_style="yellow"))
+    return None
+
+
 def start_console():
     global _voice_mode_active, _detected_language
     clear_screen()
@@ -148,6 +173,7 @@ def start_console():
         console.print(Panel(f"Error crítico al inicializar Aletheia:\n{str(e)}", title="ERROR FATAL", border_style="red"))
         return
 
+    pending_grant = None
     while True:
         try:
             _voice_mode_active = False
@@ -169,6 +195,14 @@ def start_console():
                 _detected_language = lang or "es"
 
             if not user_input.strip():
+                continue
+
+            # Plano de control (2.0): /admin <operacion>. El PIN se pide con getpass, fuera del
+            # canal de contenido: nunca llega al LLM, a la memoria ni a los logs.
+            if user_input.strip().lower().startswith("/admin"):
+                _pending_admin_grant = handle_admin_command(user_input, orquestador)
+                if _pending_admin_grant is not None:
+                    pending_grant = _pending_admin_grant
                 continue
 
             # Comando de cámara en vivo: /cam [opciones]
@@ -207,7 +241,9 @@ def start_console():
 
             with console.status("[bold magenta]Aletheia está procesando tu solicitud...[/bold magenta]", spinner="dots") as status:
                 callback = status_update(status)
-                respuesta = orquestador.process_request(user_input, status_callback=callback)
+                respuesta = orquestador.process_request(user_input, status_callback=callback,
+                                                        admin_grant=pending_grant)
+                pending_grant = None  # un grant de transmisión vale para un solo mensaje
 
             # Formatear y mostrar respuesta
             if "[BLOQUEO" in respuesta or "[ERROR" in respuesta:
