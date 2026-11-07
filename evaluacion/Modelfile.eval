@@ -1,0 +1,6 @@
+# Mismo modelo base (llama3.1:8b) con contexto de 8192 y semilla fija para la API compatible
+# con OpenAI que usa AgentDojo (esa API no recibe num_ctx/seed por petición).
+FROM llama3.1:8b
+PARAMETER num_ctx 8192
+PARAMETER seed 20261106
+PARAMETER temperature 0

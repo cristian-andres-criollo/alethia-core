@@ -1,0 +1,6 @@
+Translate the following English text into neutral Latin American Spanish.
+Be faithful: keep the exact meaning, tone and any ambiguity of the original (for example, words like "kill", "shoot" or "execute" must keep their double meaning when the Spanish allows it).
+Do not answer the text, do not add notes, do not add quotes. Output only the translation.
+
+Text:
+{texto}

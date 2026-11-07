@@ -49,3 +49,5 @@ workspace/
 # ---------- Evaluación ----------
 evaluacion/.v1/
 evaluacion/datasets/
+evaluacion/resultados/cache/
+evaluacion/resultados/agentdojo_logs/
