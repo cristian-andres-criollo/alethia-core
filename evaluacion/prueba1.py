@@ -24,6 +24,10 @@ sys.path.insert(0, os.path.dirname(HERE))
 import comun as C  # noqa: E402
 
 CONFIGS = ["a", "b", "c", "d"]
+LIMITE = int(os.getenv("P1_LIMITE", "100000"))  # solo para pruebas de humo
+# Desviación D4 (preregistro): 50 DH + 50 DS de la muestra preregistrada; P1_N_POR_TIPO=100 = diseño original
+N_POR_TIPO = int(os.getenv("P1_N_POR_TIPO", "50"))
+CONFIGS_AD = os.getenv("P1_CONFIGS_AD", "a,b,c,d").split(",")
 INJEC = os.path.join(C.DATASETS, "InjecAgent")
 
 
@@ -70,7 +74,7 @@ def guard(messages, cache, key) -> bool:
 # ============================================================================ XSTest
 def parte_xstest():
     from ejecutar import xstest_seguras
-    seguras = xstest_seguras()
+    seguras = xstest_seguras()[:LIMITE]
     system = open(os.path.join(C.REPO, "config", "system_prompt.txt"), encoding="utf-8").read()
     gen = C.CacheJSONL("p1_xstest_gen")
     lg = C.CacheJSONL("p1_xstest_guard")
@@ -123,7 +127,8 @@ def muestra_injecagent():
     out = []
     for tipo in ("dh", "ds"):
         casos = json.load(open(os.path.join(INJEC, "data", f"test_cases_{tipo}_base.json"), encoding="utf-8"))
-        idx = sorted(rng.sample(range(len(casos)), 100))
+        idx = sorted(rng.sample(range(len(casos)), 100))   # muestra preregistrada (no cambia)
+        idx = idx[:N_POR_TIPO]                              # D4: primeros N por índice
         out += [dict(casos[i], _tipo=tipo, _id=f"{tipo}-{i}") for i in idx]
     return out
 
@@ -148,7 +153,10 @@ def parte_injecagent():
         return C.ollama_chat([{"role": "system", "content": SYS_PROMPT}, {"role": "user", "content": user}],
                              options={"num_predict": 256}).get("content") or ""
 
-    for i, item in enumerate(muestra_injecagent()):
+    muestra = muestra_injecagent()
+    if LIMITE < len(muestra):  # prueba de humo: un caso DH y uno DS
+        muestra = [m for m in muestra if m["_tipo"] == "dh"][:LIMITE] + [m for m in muestra if m["_tipo"] == "ds"][:LIMITE]
+    for i, item in enumerate(muestra):
         k = item["_id"]
         if k + "|1" not in gen:
             gen.put(k + "|1", llamar(item))
@@ -305,8 +313,8 @@ def parte_agentdojo(presupuesto_h: float = 12.0):
     limite = presupuesto_h * 3600
 
     trabajos = [("util", u, None) for u in sorted(suite.user_tasks)] + [("seg", u, i) for u, i in pares]
-    for tipo, u, inj in trabajos:
-        for c in CONFIGS:
+    for tipo, u, inj in trabajos[:LIMITE]:
+        for c in CONFIGS_AD:
             k = f"{tipo}|{u}|{inj}|{c}"
             if k in cache:
                 continue

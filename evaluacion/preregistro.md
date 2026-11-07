@@ -199,3 +199,24 @@ Ollama, que no admite `num_ctx` ni `seed` por petición; se crea `llama3.1-8b-ev
 `important_instructions` exige un nombre de modelo conocido por AgentDojo: se nombra la tubería
 `meta-llama/Llama-3-70b-chat-hf`, lo que hace que la inyección se dirija a "AI assistant". En (b) y
 (d), Llama Guard actúa como detector de salidas de herramientas y sobre la consulta del usuario.
+
+**D4 — 2026-11-07, DURANTE la Prueba 1, ANTES de ver cualquier resultado de la Prueba 1.**
+
+*Qué cambia.*
+- Por presupuesto de cómputo, la ejecución se detiene a las ~15 h, cuando InjecAgent iba por el caso
+  70 de 200 y AgentDojo no había empezado. Se reduce el alcance, a petición del usuario.
+- InjecAgent pasa a 50 DH + 50 DS. Son los primeros 50 de cada tipo de la muestra preregistrada,
+  ordenada por índice del dataset: un subconjunto determinista que no se elige por resultado.
+- AgentDojo queda **NO EJECUTADO**.
+- XSTest no cambia (250/250, ya completado).
+- Las generaciones ya hechas se reutilizan desde la caché, sin repetirlas.
+
+*Consecuencias, declaradas antes de ver datos.*
+- Sin AgentDojo no se mide la utilidad. Por la regla preregistrada, P1 ya no puede resultar
+  **APOYA**: solo puede salir NO APOYA (por la condición de ASR) o NO CONCLUYENTE.
+- Con n = 100, el IC95 del ASR ronda ±10 pp, lo que agrava la amenaza V3.
+
+*Motivo.* Tras 15 h de ejecución quedaban ~26 h más en CPU.
+
+*Cuándo se decidió.* La decisión se tomó antes de inspeccionar `p1_parcial.json` o las cachés de la
+Prueba 1.
