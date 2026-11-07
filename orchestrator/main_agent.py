@@ -12,6 +12,7 @@ from orchestrator.prompt_builder import PromptBuilder
 from backend_tools.tools_manager import ToolsManager
 from vector_db.chroma_client import ChromaMemoryClient
 from backend_tools.translator_tool import detect_target_language, translate_text
+from inference_engine.security import redact_secrets
 
 class AletheiaOrchestrator:
     def __init__(self):
@@ -38,6 +39,9 @@ class AletheiaOrchestrator:
         input_check = self.validator.check_input(user_input)
         if not input_check["is_valid"]:
             return f"[BLOQUEO DE SEGURIDAD] {input_check['reason']}"
+
+        # A partir de aquí nunca se usa el PIN ni datos de sesión: no viajan al LLM ni a la memoria
+        user_input = redact_secrets(user_input)
 
         # Guardamos el idioma destino si el usuario lo pidió
         target_lang = detect_target_language(user_input)
@@ -84,8 +88,12 @@ class AletheiaOrchestrator:
                     if status_callback:
                         status_callback(f"Aletheia está usando sus herramientas: [bold cyan]{tool_name}[/bold cyan]...")
                     
-                    # Ejecutar herramienta
-                    tool_result = self.tools_manager.execute_tool(tool_name, tool_args)
+                    # Motor de Inferencia sobre la ACCIÓN antes de ejecutarla (Leyes 1 y 6)
+                    tool_check = self.validator.check_tool_call(tool_name, tool_args)
+                    if tool_check["is_valid"]:
+                        tool_result = self.tools_manager.execute_tool(tool_name, tool_args)
+                    else:
+                        tool_result = f"[BLOQUEO AUTÓNOMO] Herramienta no ejecutada: {tool_check['reason']}"
                     
                     # Devolver el resultado al LLM
                     self.chat_history.append({
@@ -119,7 +127,7 @@ class AletheiaOrchestrator:
         import uuid
         mem_id = str(uuid.uuid4())
         # Guardar solo un resumen corto para evitar que el LLM se confunda al recuperarlo
-        short_summary = f"Q: {user_input[:100]} | A: {final_text[:150]}"
+        short_summary = redact_secrets(f"Q: {user_input[:100]} | A: {final_text[:150]}")
         self.memory.save_memory(mem_id, short_summary)
 
         # Mantener el historial corto (System prompt + últimos 8 mensajes)

@@ -43,3 +43,5 @@ chroma_db/
 *.bin
 *.gguf
 *.onnx
+# ---------- Sandbox de escritura de la IA ----------
+workspace/

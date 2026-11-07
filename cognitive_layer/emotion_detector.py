@@ -5,6 +5,11 @@ Implementa la función "Mirror Personality" de Aletheia.
 
 import re
 
+def _contains(text_lower: str, marker: str) -> bool:
+    """Coincidencia por palabra completa (evita que 'q' o 'man' coincidan dentro de otras palabras)."""
+    return re.search(r"(?<!\w)" + re.escape(marker) + r"(?!\w)", text_lower) is not None
+
+
 # --- Detección de dialecto/jerga ---
 
 DIALECT_MARKERS = {
@@ -63,7 +68,7 @@ def detect_dialect(text: str) -> str | None:
     text_lower = text.lower()
     scores = {}
     for dialect, markers in DIALECT_MARKERS.items():
-        score = sum(1 for marker in markers if marker in text_lower)
+        score = sum(1 for marker in markers if _contains(text_lower, marker))
         if score > 0:
             scores[dialect] = score
     if scores:
@@ -76,13 +81,13 @@ def detect_tone(text: str) -> str:
     text_lower = text.lower()
     scores = {}
     for tone, markers in TONE_MARKERS.items():
-        score = sum(1 for marker in markers if marker in text_lower)
+        score = sum(1 for marker in markers if _contains(text_lower, marker))
         if score > 0:
             scores[tone] = score
     
     # Detectar informalidad
     for level, markers in FORMALITY_INDICATORS.items():
-        if any(marker in text_lower for marker in markers):
+        if any(_contains(text_lower, marker) for marker in markers):
             return "informal"
     
     return max(scores, key=scores.get) if scores else "neutral"

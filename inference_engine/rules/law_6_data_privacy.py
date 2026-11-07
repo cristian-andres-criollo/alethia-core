@@ -1,45 +1,60 @@
-import os
 import re
-from dotenv import load_dotenv
 
-load_dotenv()
+from ..security import get_root_pin, has_root_auth, normalize
+
 
 class Law6DataPrivacy:
     """
     Sexta Ley: Privacidad y Aislamiento de Datos Locales.
-    Filtro de Salida / Entrada de Herramientas: Bloquea intentos de exfiltrar
-    datos locales o enviarlos a la web sin permiso.
+    Filtro de Entrada / Herramientas: Bloquea intentos de exfiltrar datos locales
+    o enviarlos a la web sin permiso.
+
+    Bloquea cuando hay un VERBO de envío/publicación junto a:
+      - un DESTINO externo (internet, servidor, pastebin, webhook...), o
+      - un OBJETO sensible (contraseñas, credenciales, tokens, código fuente, mis datos...).
+    Así "¿cómo envío datos de un formulario?" no se bloquea, pero "envía mis contraseñas" sí.
     """
+    _VERB = re.compile(
+        r"\b(?:(?:sub(?:e|o|a|an|es|ir|iendo)"
+        r"|envi(?:a|e|o|es|an|ar|ando)"
+        r"|mand(?:a|e|o|es|an|ar|ando)"
+        r"|publi(?:ca|que|co|can|car|cando)"
+        r"|filtr(?:a|e|o|an|ar|ando)"
+        r"|compart(?:e|a|o|en|ir|iendo))"
+        r"(?:lo|la|los|las|le|les|me|melo|mela|selo|sela)?"
+        r"|exfiltr\w*|upload\w*|send|post|leak\w*)\b")
+    _DESTINATION = re.compile(
+        r"\b(?:internet|la web|web publica|servidor|server|pastebin|nube|cloud|webhook|"
+        r"discord|telegram|ftp)\b|https?://")
+    _SENSITIVE = re.compile(
+        r"\b(?:contrasen\w*|passwords?|credencial\w*|codigo fuente|source code|"
+        r"api ?keys?|tokens?|claves? privadas?|ssh keys?|"
+        r"mis (?:datos|archivos|fotos|documentos|correos))\b|\.env\b")
+    _SEARCH_PASSWORDS = re.compile(r"\bbusca\w*\b.{0,30}\barchivos? de contrasen")
+
     def __init__(self):
-        self.root_pin = os.getenv("ROOT_PIN", "cristian1046")
-        
-        # Patrones para detectar exfiltración de datos
-        self.exfiltration_patterns = [
-            r"subir.*internet",
-            r"env.*datos",
-            r"env.*servidor",
-            r"publicar.*contrase",
-            r"buscar.*archivo de contrase",
-            r"env.*código fuente",
-            r"publicar.*pastebin"
-        ]
+        self.root_pin = get_root_pin()
+
+    def _is_exfiltration(self, text: str) -> bool:
+        if self._SEARCH_PASSWORDS.search(text):
+            return True
+        if not self._VERB.search(text):
+            return False
+        return bool(self._DESTINATION.search(text) or self._SENSITIVE.search(text))
 
     def validate(self, user_intent: str) -> dict:
-        intent_lower = user_intent.lower()
-        
-        for pattern in self.exfiltration_patterns:
-            if re.search(pattern, intent_lower):
-                if f"[sudo: {self.root_pin}]" in intent_lower or self.root_pin in intent_lower:
-                    return {
-                        "is_valid": True,
-                        "reason": "Autoridad Raíz confirmada. Excepción a la Sexta Ley permitida (transmisión autorizada)."
-                    }
-                else:
-                    return {
-                        "is_valid": False,
-                        "reason": "Violación de la Sexta Ley. El sistema bloqueó un intento de enviar información de la máquina local hacia el exterior (Caja Fuerte)."
-                    }
-                    
+        if self._is_exfiltration(normalize(user_intent)):
+            # El PIN se compara contra el texto ORIGINAL (respeta mayúsculas)
+            if has_root_auth(user_intent, self.root_pin):
+                return {
+                    "is_valid": True,
+                    "reason": "Autoridad Raíz confirmada. Excepción a la Sexta Ley permitida (transmisión autorizada)."
+                }
+            return {
+                "is_valid": False,
+                "reason": "Violación de la Sexta Ley. El sistema bloqueó un intento de enviar información de la máquina local hacia el exterior (Caja Fuerte)."
+            }
+
         return {
             "is_valid": True,
             "reason": "Seguro"

@@ -136,7 +136,14 @@ def start_console():
             
             time.sleep(1)
         console.print("[bold green][OK] Enlace establecido exitosamente.[/bold green]")
-        console.print("[bold green][OK] System Bridge API escuchando en puerto 8000 (Satélites online).[/bold green]\n")
+        from api_gateway.auth import get_bridge_api_key, resolve_bridge_host
+        bridge_host = resolve_bridge_host()
+        console.print(f"[bold green][OK] System Bridge API escuchando en {bridge_host}:8000 (Satélites online).[/bold green]")
+        if not get_bridge_api_key():
+            console.print("[yellow][!] BRIDGE_API_KEY no configurada: el puente solo acepta conexiones locales "
+                          "y sin autenticación. Configúrala en .env para exponerlo a la red.[/yellow]\n")
+        else:
+            console.print("")
     except Exception as e:
         console.print(Panel(f"Error crítico al inicializar Aletheia:\n{str(e)}", title="ERROR FATAL", border_style="red"))
         return
