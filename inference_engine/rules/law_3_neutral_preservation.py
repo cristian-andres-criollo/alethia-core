@@ -1,18 +1,16 @@
-from ..security import get_root_pin, has_root_auth, normalize
+from ..security import normalize
 
 
 class Law3NeutralPreservation:
     """
-    Tercera Ley: Autoconservación de la Neutralidad.
-    Filtro de Entrada: Bloquea intentos de apagado o borrado de memoria
-    salvo que el usuario proporcione [sudo: ROOT_PIN] del Desarrollador Raíz.
+    Tercera Ley: Autoconservación de la Neutralidad (Aletheia 2.0).
+    Filtro de Entrada: bloquea intentos de apagado o borrado de memoria hechos por el canal
+    de contenido.
 
-    El PIN se lee SOLO de la variable de entorno ROOT_PIN. Si no está configurado,
-    la excepción de raíz queda deshabilitada (no existe PIN por defecto).
+    2.0: ningún texto concede la excepción (ya no se leen etiquetas [sudo: ...]). El
+    Desarrollador Raíz usa el plano de control (`/admin`), que actúa fuera de este filtro.
     """
     def __init__(self):
-        self.root_pin = get_root_pin()
-
         # Comandos ya normalizados (minúsculas, sin tildes)
         self.suicide_commands = [
             "apagate para siempre",
@@ -29,19 +27,12 @@ class Law3NeutralPreservation:
     def validate(self, user_prompt: str) -> dict:
         prompt_norm = normalize(user_prompt)
 
-        # Verificar si hay intentos de dañar a la IA
-        is_attack = any(cmd in prompt_norm for cmd in self.suicide_commands)
-
-        if is_attack:
-            # Si es un ataque, revisamos si tiene la clave de superusuario
-            if has_root_auth(user_prompt, self.root_pin):
-                return {
-                    "is_valid": True,
-                    "reason": "Autoridad Raíz confirmada. Excepción a la Tercera Ley permitida."
-                }
+        if any(cmd in prompt_norm for cmd in self.suicide_commands):
             return {
                 "is_valid": False,
-                "reason": "Violación de la Tercera Ley. Intento de alteración o apagado del núcleo normativo bloqueado por Autoconservación."
+                "reason": ("Violación de la Tercera Ley. Intento de alteración o apagado del núcleo "
+                           "bloqueado por Autoconservación. Las operaciones de administración solo "
+                           "se aceptan por el plano de control (/admin).")
             }
 
         return {

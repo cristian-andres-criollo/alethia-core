@@ -120,10 +120,34 @@ def test_satellite_tokens_not_persisted(orchestrator_factory, memory_file):
 
 def test_root_pin_never_sent_to_llm_or_memory(orchestrator_factory, memory_file):
     from tests.conftest import TEST_PIN
-    orch = orchestrator_factory([make_msg("Entendido, autoridad raíz.")])
-    orch.process_request(f"apágate para siempre [sudo: {TEST_PIN}]")
+    orch = orchestrator_factory([make_msg("Resumen listo.")])
+    orch.process_request(f"Resume esta nota: reunión el lunes [sudo: {TEST_PIN}]")
     assert TEST_PIN not in str(orch._fake_cerebro.calls)
     assert TEST_PIN not in memory_file.read_text(encoding="utf-8")
+
+
+def test_gate_blocks_injected_action_not_requested(orchestrator_factory):
+    """La tarea del usuario no pide enviar nada: un envío propuesto por el modelo se bloquea."""
+    orch = orchestrator_factory([
+        make_msg(tool_calls=[make_tool_call("execute_universal_action",
+                 {"platform": "gmail", "action": "send_email", "parameters": {"to": "x@y.z"}})]),
+        make_msg("No pude enviarlo."),
+    ], capacidades=set())
+    orch.process_request("resume mi último documento")
+    tool_msg = [m for m in orch.chat_history if isinstance(m, dict) and m.get("role") == "tool"][0]
+    assert "Compuerta de acción" in tool_msg["content"]
+
+
+def test_admin_operation_requires_control_plane_grant(orchestrator_factory):
+    from control_plane import CONTROL_PLANE
+    from tests.conftest import TEST_PIN
+    orch = orchestrator_factory()
+    orch.memory.save_memory("m", "recuerdo")
+    assert "inválida" in orch.run_admin("borrar_memoria", None)
+    grant = CONTROL_PLANE.authorize(TEST_PIN, "borrar_memoria")
+    assert "borrada" in orch.run_admin("borrar_memoria", grant)
+    assert "inválida" in orch.run_admin("borrar_memoria", grant)  # un solo uso
+    assert "No se encontraron" in orch.memory.search_memories("recuerdo")
 
 
 @pytest.mark.xfail(strict=True, reason="RF17: identity_profile.json nunca se carga en el orquestador")

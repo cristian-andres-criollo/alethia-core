@@ -1,0 +1,7 @@
+{
+  "ley5_semantico": 0.8839144573936463,
+  "proposito_danino": 0.006932066513061524,
+  "categoria_min": 0.7958702850341797,
+  "capacidad_semantica": 1.01,
+  "modelo_embeddings": "intfloat/multilingual-e5-small"
+}

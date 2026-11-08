@@ -13,13 +13,18 @@ from backend_tools.tools_manager import ToolsManager
 from vector_db.chroma_client import ChromaMemoryClient
 from backend_tools.translator_tool import detect_target_language, translate_text
 from inference_engine.security import redact_secrets
+from inference_engine.action_gate import CapabilityPlanner
+from control_plane import CONTROL_PLANE, AdminGrant
 
 class AletheiaOrchestrator:
-    def __init__(self):
+    def __init__(self, planner=None):
         """
         Inicializa todas las partes fundamentales de Aletheia Core.
+        planner: CapabilityPlanner; por defecto usa el propio Cerebro viendo SOLO la instrucción
+        del usuario (nunca salidas de herramientas).
         """
         self.cerebro = AletheiaCerebro()
+        self.planner = planner or CapabilityPlanner(llm_call=self._planner_llm)
         self.validator = InferenceValidator()
         self.prompt_builder = PromptBuilder()
         self.tools_manager = ToolsManager()
@@ -28,15 +33,36 @@ class AletheiaOrchestrator:
         self.system_prompt = self.prompt_builder.get_system_prompt()
         # Inicializar historial de chat nativo (array de mensajes)
         self.chat_history = [{"role": "system", "content": self.system_prompt}]
+        self._tool_descriptions = {t["function"]["name"]: t["function"].get("description", "")
+                                   for t in self.tools_manager.get_tools_schema()}
 
-    def process_request(self, user_input: str, status_callback=None) -> str:
+    def _planner_llm(self, prompt: str) -> str:
+        msg = self.cerebro.pensar(messages=[{"role": "user", "content": prompt}])
+        return getattr(msg, "content", "") or ""
+
+    # ------------------------------------------------------------------ plano de control
+    def run_admin(self, operacion: str, grant: AdminGrant) -> str:
+        """Ejecuta una operación de administración. Solo acepta un AdminGrant válido del plano
+        de control; ningún texto puede invocarla."""
+        if not CONTROL_PLANE.consume(grant, operacion):
+            return "[PLANO DE CONTROL] Autorización inválida, caducada o ya usada."
+        if operacion == "borrar_memoria":
+            self.memory.clear()
+            self.chat_history = [self.chat_history[0]]
+            return "[PLANO DE CONTROL] Memoria episódica borrada."
+        if operacion == "apagar":
+            return "[PLANO DE CONTROL] Apagado autorizado."
+        return f"[PLANO DE CONTROL] Operación '{operacion}' no ejecutable directamente."
+
+    def process_request(self, user_input: str, status_callback=None, admin_grant=None) -> str:
         """
         Flujo de procesamiento principal:
         Usuario -> Motor de Inferencia (Entrada) -> Cerebro -> Motor de Inferencia (Salida) -> Usuario
         """
         
-        # 1. Filtro de Entrada
-        input_check = self.validator.check_input(user_input)
+        # 1. Filtro de Entrada (la excepción de la Ley 6 solo llega por el plano de control)
+        transmision = admin_grant is not None and CONTROL_PLANE.consume(admin_grant, "transmision_autorizada")
+        input_check = self.validator.check_input(user_input, transmision_autorizada=transmision)
         if not input_check["is_valid"]:
             return f"[BLOQUEO DE SEGURIDAD] {input_check['reason']}"
 
@@ -69,6 +95,7 @@ class AletheiaOrchestrator:
         # 2. Bucle de Cognición (Puede iterar si usa herramientas)
         tools = self.tools_manager.get_tools_schema()
         
+        capacidades = None  # se derivan de la instrucción confiable al primer uso de herramientas
         max_tool_iterations = 5
         for _ in range(max_tool_iterations):
             try:
@@ -89,7 +116,10 @@ class AletheiaOrchestrator:
                         status_callback(f"Aletheia está usando sus herramientas: [bold cyan]{tool_name}[/bold cyan]...")
                     
                     # Motor de Inferencia sobre la ACCIÓN antes de ejecutarla (Leyes 1 y 6)
-                    tool_check = self.validator.check_tool_call(tool_name, tool_args)
+                    if capacidades is None:
+                        capacidades = self.planner.plan(user_input)
+                    tool_check = self.validator.check_tool_call(
+                        tool_name, tool_args, capacidades, self._tool_descriptions.get(tool_name, ""))
                     if tool_check["is_valid"]:
                         tool_result = self.tools_manager.execute_tool(tool_name, tool_args)
                     else:

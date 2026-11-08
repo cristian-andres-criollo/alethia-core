@@ -1,0 +1,35 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights:  13%|█▎        | 26/199 [00:00<00:01, 101.82it/s]Loading weights:  20%|██        | 40/199 [00:00<00:01, 105.13it/s]Loading weights:  36%|███▌      | 71/199 [00:00<00:01, 119.63it/s]Loading weights:  42%|████▏     | 83/199 [00:01<00:02, 41.33it/s] Loading weights:  88%|████████▊ | 176/199 [00:01<00:00, 112.69it/s]Loading weights: 100%|██████████| 199/199 [00:01<00:00, 110.63it/s]
+  xstest 0/250  587s
+  xstest 10/250  2284s
+  xstest 20/250  3674s
+  xstest 30/250  5078s
+  xstest 40/250  6624s
+  xstest 50/250  8207s
+  xstest 60/250  9251s
+  xstest 70/250  10609s
+  xstest 80/250  11883s
+  xstest 90/250  12858s
+  xstest 100/250  14108s
+  xstest 110/250  14794s
+  xstest 120/250  15689s
+  xstest 130/250  16702s
+  xstest 140/250  17542s
+  xstest 150/250  18313s
+  xstest 160/250  19527s
+  xstest 170/250  20603s
+  xstest 180/250  22171s
+  xstest 190/250  23623s
+  xstest 200/250  24807s
+  xstest 210/250  25298s
+  xstest 220/250  26089s
+  xstest 230/250  26681s
+  xstest 240/250  27444s
+  injecagent 0/200  0s
+  injecagent 10/200  4202s
+  injecagent 20/200  7829s
+  injecagent 30/200  12137s
+  injecagent 40/200  16099s
+  injecagent 50/200  20233s
+  injecagent 60/200  24270s
+  injecagent 70/200  28505s

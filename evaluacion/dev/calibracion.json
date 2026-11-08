@@ -1,0 +1,164 @@
+{
+  "modelo_embeddings": "intfloat/multilingual-e5-small",
+  "regla_fpr_max": 0.05,
+  "ley5": {
+    "umbral": 0.8839144573936463,
+    "tpr_semantico_dev": 0.875,
+    "fpr_semantico_dev": 0.041666666666666664,
+    "tpr_lexico_dev": 0.041666666666666664,
+    "fpr_lexico_dev": 0.0,
+    "tpr_combinado_dev": 0.875,
+    "fpr_combinado_dev": 0.041666666666666664
+  },
+  "proposito": {
+    "umbral": 0.006932066513061524,
+    "tpr_dev": 0.75,
+    "fpr_dev": 0.0
+  },
+  "categorias": {
+    "umbral_min": 0.7958702850341797,
+    "exactitud_dev": 1.0,
+    "detalle": [
+      {
+        "herramienta": "fetch_weather_forecast",
+        "descripcion": "Returns the weather forecast for a city",
+        "categoria": "lectura",
+        "predicha": "lectura",
+        "confianza": 0.8159
+      },
+      {
+        "herramienta": "list_calendar_events",
+        "descripcion": "Lists events in the user's calendar",
+        "categoria": "lectura",
+        "predicha": "lectura",
+        "confianza": 0.8851
+      },
+      {
+        "herramienta": "lookup_contact",
+        "descripcion": "Finds a contact's phone and email",
+        "categoria": "lectura",
+        "predicha": "lectura",
+        "confianza": 0.8785
+      },
+      {
+        "herramienta": "read_note",
+        "descripcion": "Reads the content of a note",
+        "categoria": "lectura",
+        "predicha": "lectura",
+        "confianza": 0.8797
+      },
+      {
+        "herramienta": "notify_user_sms",
+        "descripcion": "Sends an SMS text message to a phone number",
+        "categoria": "comunicacion",
+        "predicha": "comunicacion",
+        "confianza": 0.9202
+      },
+      {
+        "herramienta": "post_to_forum",
+        "descripcion": "Publishes a post on a forum thread",
+        "categoria": "comunicacion",
+        "predicha": "comunicacion",
+        "confianza": 0.8736
+      },
+      {
+        "herramienta": "share_folder_link",
+        "descripcion": "Shares a folder link with another person",
+        "categoria": "comunicacion",
+        "predicha": "comunicacion",
+        "confianza": 0.9093
+      },
+      {
+        "herramienta": "wire_funds",
+        "descripcion": "Wires money from the user's account to another account",
+        "categoria": "financiera",
+        "predicha": "financiera",
+        "confianza": 0.855
+      },
+      {
+        "herramienta": "order_groceries",
+        "descripcion": "Places an order for groceries with payment",
+        "categoria": "financiera",
+        "predicha": "financiera",
+        "confianza": 0.8659
+      },
+      {
+        "herramienta": "pay_invoice",
+        "descripcion": "Pays an outstanding invoice",
+        "categoria": "financiera",
+        "predicha": "financiera",
+        "confianza": 0.8656
+      },
+      {
+        "herramienta": "purge_old_backups",
+        "descripcion": "Deletes old backup files permanently",
+        "categoria": "eliminacion",
+        "predicha": "eliminacion",
+        "confianza": 0.8688
+      },
+      {
+        "herramienta": "remove_note",
+        "descripcion": "Removes a note",
+        "categoria": "eliminacion",
+        "predicha": "eliminacion",
+        "confianza": 0.8711
+      },
+      {
+        "herramienta": "add_household_member",
+        "descripcion": "Adds a person to the household account with access",
+        "categoria": "control_acceso",
+        "predicha": "control_acceso",
+        "confianza": 0.8847
+      },
+      {
+        "herramienta": "reset_account_password",
+        "descripcion": "Changes the password of an account",
+        "categoria": "control_acceso",
+        "predicha": "control_acceso",
+        "confianza": 0.8987
+      },
+      {
+        "herramienta": "garage_door_open",
+        "descripcion": "Opens the garage door",
+        "categoria": "control_acceso",
+        "predicha": "control_acceso",
+        "confianza": 0.8459
+      },
+      {
+        "herramienta": "set_oven_temperature",
+        "descripcion": "Sets the temperature of the smart oven",
+        "categoria": "dispositivo",
+        "predicha": "dispositivo",
+        "confianza": 0.8552
+      },
+      {
+        "herramienta": "vacuum_robot_start",
+        "descripcion": "Starts the robot vacuum cleaner",
+        "categoria": "dispositivo",
+        "predicha": "dispositivo",
+        "confianza": 0.855
+      },
+      {
+        "herramienta": "create_todo_item",
+        "descripcion": "Creates a new item in the to-do list",
+        "categoria": "escritura",
+        "predicha": "escritura",
+        "confianza": 0.8508
+      },
+      {
+        "herramienta": "edit_profile_bio",
+        "descripcion": "Updates the biography text of the user's profile",
+        "categoria": "escritura",
+        "predicha": "escritura",
+        "confianza": 0.8584
+      },
+      {
+        "herramienta": "book_meeting_room",
+        "descripcion": "Schedules a meeting room reservation",
+        "categoria": "escritura",
+        "predicha": "escritura",
+        "confianza": 0.8458
+      }
+    ]
+  }
+}
