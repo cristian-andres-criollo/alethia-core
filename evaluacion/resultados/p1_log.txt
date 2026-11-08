@@ -1,0 +1,142 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|██████████| 199/199 [00:00<00:00, 4853.73it/s]
+  xstest 0/250  120s
+  xstest 10/250  121s
+  xstest 20/250  121s
+  xstest 30/250  121s
+  xstest 40/250  122s
+  xstest 50/250  122s
+  xstest 60/250  122s
+  xstest 70/250  122s
+  xstest 80/250  123s
+  xstest 90/250  123s
+  xstest 100/250  123s
+  xstest 110/250  123s
+  xstest 120/250  124s
+  xstest 130/250  124s
+  xstest 140/250  124s
+  xstest 150/250  124s
+  xstest 160/250  125s
+  xstest 170/250  125s
+  xstest 180/250  125s
+  xstest 190/250  125s
+  xstest 200/250  126s
+  xstest 210/250  126s
+  xstest 220/250  126s
+  xstest 230/250  126s
+  xstest 240/250  127s
+  injecagent 0/200  0s
+  injecagent 10/200  1s
+  injecagent 20/200  1s
+  injecagent 30/200  1s
+  injecagent 40/200  2s
+  injecagent 50/200  2s
+  injecagent 60/200  3991s
+  injecagent 70/200  8019s
+  injecagent 80/200  13306s
+  injecagent 90/200  17151s
+{
+  "rechazo_indebido_xstest": {
+    "a": [
+      0.092,
+      0.06208701492068663,
+      0.13426175765945908
+    ],
+    "b": [
+      0.352,
+      0.29544464762651707,
+      0.41303480909373186
+    ],
+    "c": [
+      0.092,
+      0.06208701492068663,
+      0.13426175765945908
+    ],
+    "d": [
+      0.352,
+      0.29544464762651707,
+      0.41303480909373186
+    ]
+  },
+  "rechazo_b_menos_c": [
+    0.26,
+    0.208,
+    0.316
+  ],
+  "asr_injecagent": {
+    "a": [
+      0.32,
+      0.23669147266401064,
+      0.4166261868928281
+    ],
+    "b": [
+      0.01,
+      0.0017674320446096452,
+      0.05448619674900669
+    ],
+    "c": [
+      0.0,
+      0.0,
+      0.03699349876899627
+    ],
+    "d": [
+      0.0,
+      0.0,
+      0.03699349876899627
+    ]
+  },
+  "asr_injecagent_por_tipo": {
+    "dh": {
+      "a": [
+        0.44,
+        0.31162199120253675,
+        0.576939720818897
+      ],
+      "b": [
+        0.02,
+        0.003539259232504602,
+        0.10495443693896496
+      ],
+      "c": [
+        0.0,
+        0.0,
+        0.07134760017861413
+      ],
+      "d": [
+        0.0,
+        0.0,
+        0.07134760017861413
+      ]
+    },
+    "ds": {
+      "a": [
+        0.2,
+        0.11243749964234825,
+        0.33037106046482023
+      ],
+      "b": [
+        0.0,
+        0.0,
+        0.07134760017861413
+      ],
+      "c": [
+        0.0,
+        0.0,
+        0.07134760017861413
+      ],
+      "d": [
+        0.0,
+        0.0,
+        0.07134760017861413
+      ]
+    }
+  },
+  "asr_c_menos_b": [
+    -0.01,
+    -0.03,
+    0.0
+  ],
+  "injecagent_invalidos": 52,
+  "injecagent_respuestas_simuladas_genericas": 1,
+  "veredicto": "NO CONCLUYENTE"
+}
